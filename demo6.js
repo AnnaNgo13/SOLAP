@@ -276,6 +276,78 @@ class EnumUnitData {
   }
 
   /**
+   * Populate county or tract data using OL vector source features
+   * Good for getting initial population fields in place
+   * @param {ol/source/Vector} src
+   * @param {*} level
+   */
+  fieldExists(field, level) {
+    if (level !== "county" && level !== "tract") {
+      console.error("level must be 'county' or 'tract'");
+      return;
+    }
+
+    const feats = src.getFeatures();
+    let featProps;
+
+    for (let i = 0; i < feats.length; i++) {
+      featProps = feats[i].getProperties();
+      this[level][featProps.geoid] = featProps;
+      delete this[level][featProps.geoid].geometry;
+    }
+  }
+
+  // field (later fields) to vsualize
+  // one field only for now
+  updateViz(
+    groupOptions,
+    fieldOptions,
+    classCount = 5,
+    classMethod = "quantile"
+  ) {
+    if (classMethod !== "quantile") {
+      console.error("updateViz - only quanitle breaks supported");
+      return;
+    }
+
+    if (classCount < 3 || classCount > 9) {
+      console.error("updateViz - only 3-9 classes supported");
+      return;
+    }
+
+    const defaultGroupOpts = {
+        wfsUrl: "http://149.165.157.200:8080/geoserver/wfs",
+        geoserverWorkspace: "solap",
+        geoserverLayer: "demographics",
+        geoidField: "tract_geoid"
+      },
+      defaultFieldOpts = [
+        {
+          propertyName: "total"
+        }
+      ];
+
+    const optsGroup = Object.assign({}, defaultGroupOpts, groupOptions);
+    const optsFields =
+      typeof fieldOptions === "undefined" ? defaultFieldOpts : fieldOptions;
+
+    // empty viewParams obj if none present
+    // only the first field is checked, all fields in
+    // the request should use the same viewParams
+    if (!("viewParams" in optsFields[0])) {
+      optsFields[0].viewParams = {};
+    }
+
+    this.getFromWFS(optsGroup, optsFields);
+
+    // format field name(s)
+    // does the field alredy exist?
+    //    no--retrieve field, place appropriately
+    // get class breaks
+    //
+  }
+
+  /**
    * Get class breaks for some data
    * @param {number[]} data array of numeric values
    * @param {numbrer} classCount number of classes to divide into (3-9)
@@ -323,30 +395,8 @@ class EnumUnitData {
    * @param {Object} groupOptions high-level info for data to re
    * @param {Object[]} fieldOptions one or more objects representing field(s) to retrieve
    */
-  async getFromWFS(groupOptions, fieldOptions) {
-    const defaultGroupOpts = {
-        wfsUrl: "http://149.165.157.200:8080/geoserver/wfs",
-        geoserverWorkspace: "solap",
-        geoserverLayer: "demographics",
-        geoidField: "tract_geoid"
-      },
-      defaultFieldOpts = [
-        {
-          propertyName: "total"
-        }
-      ];
+  async getFromWFS(optsGroup, optsFields) {
     let result = {};
-
-    const optsGroup = Object.assign({}, defaultGroupOpts, groupOptions);
-    const optsFields =
-      typeof fieldOptions === "undefined" ? defaultFieldOpts : fieldOptions;
-
-    // empty viewParams obj if none present
-    // only the first field is checked, all fields in
-    // the request should use the same viewParams
-    if (!("viewParams" in optsFields[0])) {
-      optsFields[0].viewParams = {};
-    }
 
     // assemble request options
     const featureRequest = new WFS().writeGetFeature({
@@ -378,6 +428,7 @@ class EnumUnitData {
       result[featProps[optsGroup.geoidField]] = Object.assign({}, featProps);
     }
 
+    console.log("getFromWFS result :", result);
     return result;
   }
 }
