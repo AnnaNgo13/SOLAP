@@ -291,6 +291,32 @@ class EnumUnitData {
   }
 
   /**
+   * Provide a normalized field name to avoid collisions
+   * @param {Object} fieldInfo
+   */
+  normalizeFieldName(fieldInfo) {
+    const fieldInfoDefaults = {
+      geoserverWorkspace: null,
+      geoserverLayer: null,
+      field: null,
+      viewParams: {}
+      // viewParams: { pollutant: "so2", year: 2005 } // example
+    };
+
+    const field = Object.assign({}, fieldInfoDefaults, fieldInfo);
+    let result = `${field.geoserverWorkspace}|${field.geoserverLayer}|${field.field}`;
+
+    const vpKeys = Object.keys(field.viewParams);
+    vpKeys.sort(); // ensure consistent order
+
+    for (let i = 0; i < vpKeys.length; i++) {
+      result += `|${vpKeys[i]}:${field.viewParams[vpKeys[i]]}`;
+    }
+
+    return result;
+  }
+
+  /**
    * Get data from WFS, return key on geoid with values in subobj
    * Handles parameterized (viewParams) requests, assuming all vars
    * are available for one set of viewParams
