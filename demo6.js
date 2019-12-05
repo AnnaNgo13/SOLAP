@@ -415,21 +415,6 @@ class EnumUnitData {
   }
 
   /**
-   * Get class breaks for some data
-   * @param {number[]} data array of numeric values
-   * @param {numbrer} classCount number of classes to divide into (3-9)
-   * @param {string} classMethod "quantile" or "equalinterval" method
-   * @returns {Object} keys of geoid and prop:value within
-   */
-  getClasses(data, classCount, classMethod) {
-    if (classMethod !== "quantile") {
-      console.error("getClasses - only quanitle breaks supported");
-      return;
-    }
-    return;
-  }
-
-  /**
    * Provide a normalized field name to avoid collisions
    * @param {Object} fieldInfo
    */
