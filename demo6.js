@@ -307,13 +307,19 @@ class EnumUnitData {
    * @param {number} classCount number of classes to find breaks for
    * @param {number[]} vals1 list of primary values to determine breaks from
    * @param {number[]} [vals2] second property name to check values for; bivariate use
+   * @returns {Object[]} one or two objects in an array with lowval and breaks
    */
   getClassBreaks(classCount, classMethod, vals1, vals2) {
     if (typeof vals2 === "undefined") {
-      return [quantiles(vals1, classCount)];
+      return [
+        { minVal: Math.min(...vals1), breaks: quantiles(vals1, classCount) }
+      ];
     } else {
       // always three-class/nine-class for bivariate
-      return [quantiles(vals1, 3), quantiles(vals2, 3)];
+      return [
+        { minVal: Math.min(...vals1), breaks: quantiles(vals1, 3) },
+        { minVal: Math.min(...vals2), breaks: quantiles(vals2, 3) }
+      ];
     }
   }
 
