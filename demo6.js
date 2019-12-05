@@ -19,6 +19,7 @@ import colorbrewer from "colorbrewer";
 import { quantiles, quantileGroups } from "qquantile";
 import { equalTo as equalToFilter } from "ol/format/filter";
 import ColorBrewerStyles from "./ColorBrewerStyles";
+import StyleFunctionFromBreaks from "./StyleFunctionFromBreaks";
 
 /**
  * A CARTO basemap
@@ -252,6 +253,7 @@ class EnumUnitData {
   constructor() {
     this.tract = {};
     this.county = {};
+    this.symbolizePropName = "solap_symbolize_on";
   }
 
   /**
@@ -402,12 +404,12 @@ class EnumUnitData {
 
     // get array of values to determine classes from
     // TODO support multiple values, e.g. grouped pop by age by sex
-    const symbolizeValues = [];
+    const symbolizePairs = {};
     for (let geoid in this[level]) {
       if (normedNames[optsFields[0].propertyName] in this[level][geoid]) {
-        symbolizeValues.push(
-          this[level][geoid][normedNames[optsFields[0].propertyName]]
-        );
+        symbolizePairs[geoid] = this[level][geoid][
+          normedNames[optsFields[0].propertyName]
+        ];
       }
     }
 
@@ -415,9 +417,25 @@ class EnumUnitData {
     const breaks = this.getClassBreaks(
       classCount,
       classMethod,
-      symbolizeValues
+      Object.values(symbolizePairs)
     );
-    console.log("breaks :", breaks);
+
+    // populate layer source with symbolize property
+    const layerFeatures = toLayer.getSource().getFeatures();
+    let lfGeoid;
+    for (let i = 0; i < layerFeatures.length; i++) {
+      lfGeoid = layerFeatures[i].getProperties().geoid;
+      if (lfGeoid in symbolizePairs) {
+        layerFeatures[i].setProperties({
+          [this.symbolizePropName]: symbolizePairs[lfGeoid]
+        });
+      }
+    }
+
+    // style the layer
+    toLayer.setStyle(
+      StyleFunctionFromBreaks(breaks, { prop1Names: [this.symbolizePropName] })
+    );
   }
 
   /**
@@ -496,6 +514,7 @@ window.app = {};
 app = window.app;
 app.map = map;
 app.e = e;
+app.tl = tractLayer;
 
 app.sampleGroupOpts1 = {
   wfsUrl: "http://149.165.157.200:8080/geoserver/wfs",
