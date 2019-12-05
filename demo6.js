@@ -18,7 +18,8 @@ import { Stroke, Fill, Style } from "ol/style";
 import colorbrewer from "colorbrewer";
 import { quantiles, quantileGroups } from "qquantile";
 import { equalTo as equalToFilter } from "ol/format/filter";
-import { PassThrough } from "stream";
+import ColorBrewerStyles from "./ColorBrewerStyles";
+
 /**
  * A CARTO basemap
  */
@@ -297,9 +298,30 @@ class EnumUnitData {
     }
   }
 
+  /**
+   * TODO make this work with equal breaks
+   * Given a set of features, find class breaks for quantiles.
+   * Normalization (e.g. pop density from separate fields) is
+   * supported, along with a normalization multipler. Univariate
+   * and bivariate cases handled. Breaks are <= upper limits.
+   * @param {number} classCount number of classes to find breaks for
+   * @param {number[]} vals1 list of primary values to determine breaks from
+   * @param {number[]} [vals2] second property name to check values for; bivariate use
+   */
+  getClassBreaks(classCount, classMethod, vals1, vals2) {
+    if (typeof vals2 === "undefined") {
+      return [quantiles(vals1, classCount)];
+    } else {
+      // always three-class/nine-class for bivariate
+      return [quantiles(vals1, 3), quantiles(vals2, 3)];
+    }
+  }
+
   // field (later fields) to vsualize
   // one field only for now
-  updateViz(
+  async updateViz(
+    level, // county or tract
+    toLayer, // layer to update
     groupOptions,
     fieldOptions,
     classCount = 5,
@@ -338,13 +360,58 @@ class EnumUnitData {
       optsFields[0].viewParams = {};
     }
 
-    this.getFromWFS(optsGroup, optsFields);
+    // get normalized field names for all parameters to rekey data
+    const normedNames = {};
+    for (let i = 0; i < optsFields.length; i++) {
+      normedNames[optsFields[i].propertyName] = this.normalizeFieldName({
+        geoserverWorkspace: optsGroup.geoserverWorkspace,
+        geoserverLayer: optsGroup.geoserverLayer,
+        field: optsFields[i].propertyName,
+        viewParams:
+          "viewParams" in optsFields[i] ? optsFields[i].viewParams : {}
+      });
+    }
 
-    // format field name(s)
-    // does the field alredy exist?
-    //    no--retrieve field, place appropriately
+    // TODO add field check; handle population fields from source?
+    const featureData = this.getFromWFS(optsGroup, optsFields);
+
+    // add feature data to this.tract or this.county
+    await featureData.then(data => {
+      // first pass, rename to normalized
+      for (let geoid in data) {
+        delete data[geoid][optsGroup.geoidField]; // delete extra key prop
+        for (let origField in normedNames) {
+          data[geoid][normedNames[origField]] = data[geoid][origField];
+          delete data[geoid][origField];
+        }
+      }
+
+      // assign into this.tract or this.county
+      for (let geoid in data) {
+        this[level][geoid] = Object.assign({}, this[level][geoid], data[geoid]);
+      }
+
+      // TODO aggregation to county here
+    });
+
+    // get array of values to determine classes from
+    // TODO support multiple values, e.g. grouped pop by age by sex
+    const symbolizeValues = [];
+    for (let geoid in this[level]) {
+      if (normedNames[optsFields[0].propertyName] in this[level][geoid]) {
+        symbolizeValues.push(
+          this[level][geoid][normedNames[optsFields[0].propertyName]]
+        );
+      }
+    }
+
     // get class breaks
-    //
+    const breaks = this.getClassBreaks(
+      classCount,
+      classMethod,
+      symbolizeValues
+    );
+    console.log("breaks :", breaks);
   }
 
   /**
@@ -428,7 +495,6 @@ class EnumUnitData {
       result[featProps[optsGroup.geoidField]] = Object.assign({}, featProps);
     }
 
-    console.log("getFromWFS result :", result);
     return result;
   }
 }
@@ -464,3 +530,5 @@ app.sampleFieldOpts2 = [
     viewParams: { pollutant: "so2", year: 2005 }
   }
 ];
+
+app.cbs = ColorBrewerStyles;
