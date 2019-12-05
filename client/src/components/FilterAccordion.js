@@ -12,18 +12,30 @@ import {
   CheckBox,
   TextInput
 } from "grommet";
+import Slider from "@material-ui/core/Slider";
 
 import { capitalize } from "../helpers/utils";
 
 const renderFieldBasedOnType = (field, value, onChange) => {
   switch (field.type) {
+    case "slider":
+      return (
+        <Slider
+          name={field.name}
+          value={value}
+          valueLabelDisplay="auto"
+          aria-labelledby="range-slider"
+          marks={field.marks}
+          
+        />
+      );
     case "textInput":
       return (
         <TextInput
           name={field.name}
           placeholder={field.placeholder}
           value={value}
-          //onChange={onChange}
+        //onChange={onChange}
         />
       );
     case "range":
@@ -59,10 +71,14 @@ const renderFieldBasedOnType = (field, value, onChange) => {
             const yearOptions = field.fieldOptions.find(
               option => option.value === e.target.value
             ).year;
+            const fieldOptions = field.fieldOptions.find(option => option.value === e.target.value)
+            const { ["fieldOptions"]: removedKey, ...groupOptions } = field;
             onChange({
               name: e.target.name,
               value: e.target.value,
-              yearOptions
+              yearOptions,
+              groupOptions,
+              fieldOptions
             });
           }}
         />
@@ -138,14 +154,16 @@ const YearFilter = ({ field, value, onChange, filterValues }) => {
       <Text>
         {capitalize(field.name)}: {value === 0 ? "Pick a year" : value}
       </Text>
-      <Select
+      <Slider
         name={field.name}
-        placeholder={field.placeholder}
-        options={buildYearOptions()}
         value={value}
+        valueLabelDisplay="auto"
+        marks={buildYearOptions()}
         onChange={e => onChange({ name: e.target.name, value: e.option })}
       />
+
     </React.Fragment>
+
   );
 };
 
