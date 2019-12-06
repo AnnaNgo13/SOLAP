@@ -12,7 +12,7 @@ export default class FilterContextProvider extends Component {
     };
   }
 
-  handleInputChange = async ({ name, value, yearOptions, groupOptions, fieldOptions }) => {
+  handleInputChange = async ({ name, value, yearOptions, groupOptions, fieldOptions, marks }) => {
     const canAddFilter = () => {
       if (
         this.state[this.props.variableName].filterValues.hasOwnProperty(
@@ -40,7 +40,7 @@ export default class FilterContextProvider extends Component {
         return true;
       else if (
         Object.keys(this.state[this.props.variableName].filterValues).length <
-          2 ||
+        2 ||
         name === "Time Period" ||
         name === "Geographic Unit"
       )
@@ -51,7 +51,46 @@ export default class FilterContextProvider extends Component {
         return true;
       else return false;
     };
+    const ageRange = () => {
+
+      var ageDistance = {};
+      var counter = 0;
+      marks.forEach(function (arrayItem) {
+        var varDistance1 = arrayItem.value - value[1];
+        var varDistance2 = arrayItem.value - value[0];
+        ageDistance[counter] = {
+          ageGroup: arrayItem.value,
+          distance1: varDistance1,
+          distance2: varDistance2
+        };
+        counter = counter + 1;
+      });
+
+      var aDistance = 1000;
+      var bDistance = 1000;
+      var maxCategory = value[1];
+      var minCategory = value[0];
+      Object.keys(ageDistance).forEach(function (key) {
+        var ageObj = ageDistance[key];
+        var itemDistance1 = Math.abs(ageObj.distance1);
+        var itemDistance2 = Math.abs(ageObj.distance2);
+        if (itemDistance1 < aDistance) {
+          aDistance = itemDistance1;
+          minCategory = ageObj.ageGroup;
+        }
+        if (itemDistance2 < bDistance) {
+          bDistance = itemDistance2;
+          maxCategory = ageObj.ageGroup;
+        }
+      });
+      value = ([maxCategory, minCategory]);
+      return value
+    }
     const canAdd = canAddFilter();
+    if (name === "Population By Age") {
+      value = ageRange();
+    }
+
     const { variableName } = this.props;
     if (canAdd === true) {
       await this.setState({
@@ -69,7 +108,8 @@ export default class FilterContextProvider extends Component {
         }
       });
       this.props.handleMapChange({ name, value, yearOptions, groupOptions, fieldOptions });
-    } else {
+    }
+    else {
       console.log("more than 2 objects choosen");
       alert("Please delete a filter before adding another");
     }

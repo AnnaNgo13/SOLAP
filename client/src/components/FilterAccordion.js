@@ -26,7 +26,18 @@ const renderFieldBasedOnType = (field, value, onChange) => {
           valueLabelDisplay="auto"
           aria-labelledby="range-slider"
           marks={field.marks}
-          
+          min={field.min}
+          max={field.max}
+          defaultValue={field.defaultValue}
+          onChange={(e, newValue) => {
+            const { ["fieldOptions"]: removedKey, ...groupOptions } = field;
+            onChange({
+              name: field.name,
+              value: newValue,
+              groupOptions,
+              marks: field.marks
+            });
+          }}
         />
       );
     case "textInput":
@@ -149,11 +160,10 @@ const YearFilter = ({ field, value, onChange, filterValues }) => {
       }
     });
     yearOptions.forEach(function (item, index) {
-      yearOptionsFormatted.push({value: item, label: String(item)}) 
+      yearOptionsFormatted.push({ value: item, label: String(item) })
     })
-    console.log(yearOptionsFormatted)
     return yearOptionsFormatted;
-    
+
   };
   return (
     <React.Fragment key={field.name}>
@@ -166,9 +176,9 @@ const YearFilter = ({ field, value, onChange, filterValues }) => {
         valueLabelDisplay="auto"
         marks={buildYearOptions()}
         onChange={e => onChange({ name: e.target.name, value: e.option })}
-        min = {1950}
-        max = {2050}
-        defaultValue = {2000}
+        min={1950}
+        max={2050}
+        defaultValue={2000}
       />
 
     </React.Fragment>
