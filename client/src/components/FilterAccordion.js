@@ -136,6 +136,7 @@ const Filter = ({ field, value, onChange }) => {
 const YearFilter = ({ field, value, onChange, filterValues }) => {
   const buildYearOptions = () => {
     let yearOptions = [];
+    let yearOptionsFormatted = [];
     Object.values(filterValues).forEach(val => {
       if (val.yearOptions) {
         if (yearOptions.length === 0) {
@@ -143,11 +144,16 @@ const YearFilter = ({ field, value, onChange, filterValues }) => {
         } else {
           yearOptions = yearOptions.filter(year =>
             val.yearOptions.includes(year)
-          );
+          )
         }
       }
     });
-    return yearOptions;
+    yearOptions.forEach(function (item, index) {
+      yearOptionsFormatted.push({value: item, label: String(item)}) 
+    })
+    console.log(yearOptionsFormatted)
+    return yearOptionsFormatted;
+    
   };
   return (
     <React.Fragment key={field.name}>
@@ -160,6 +166,9 @@ const YearFilter = ({ field, value, onChange, filterValues }) => {
         valueLabelDisplay="auto"
         marks={buildYearOptions()}
         onChange={e => onChange({ name: e.target.name, value: e.option })}
+        min = {1950}
+        max = {2050}
+        defaultValue = {2000}
       />
 
     </React.Fragment>
