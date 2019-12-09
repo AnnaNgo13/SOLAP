@@ -18,16 +18,17 @@ CREATE TABLE health_behaviors(
     data_value double precision,
     low_confidence_limit double precision,
     high_confidence_limit double precision,
-    population2010 bigint,
     categoryid text,
     measureid text,
     cityfips text,
     tractfips text,
-    short_question_text text 
+    short_question_text text,
+    short_code text
 );
 
+\COPY health_behaviors FROM 'E:\git\SOLAP\datasets\health_2014.csv' WITH CSV HEADER;
+\COPY health_behaviors FROM 'E:\git\SOLAP\datasets\health_2015.csv' WITH CSV HEADER;
 \COPY health_behaviors FROM 'E:\git\SOLAP\datasets\health_2016.csv' WITH CSV HEADER;
 \COPY health_behaviors FROM 'E:\git\SOLAP\datasets\health_2017.csv' WITH CSV HEADER;
-\COPY health_behaviors FROM 'E:\git\SOLAP\datasets\health_2018.csv' WITH CSV HEADER;
 
 END;
