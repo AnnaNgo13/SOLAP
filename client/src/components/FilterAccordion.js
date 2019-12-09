@@ -174,8 +174,7 @@ const YearFilter = ({ field, value, onChange, filterValues }) => {
         name={field.name}
         value={value}
         valueLabelDisplay="auto"
-        marks={buildYearOptions()}
-        onChange={e => onChange({ name: e.target.name, value: e.option })}
+        onChange={(e, newValue) => onChange({ name: field.name, value: newValue })}
         min={1950}
         max={2050}
         defaultValue={2000}
