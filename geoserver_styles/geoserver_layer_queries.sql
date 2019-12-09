@@ -39,3 +39,9 @@ WHERE geom_type = '%geom_type%' -- tract/county
 GROUP BY geoid, g.geom, geom_type
 
 
+--Food Access
+SELECT f.geoid as tract_geoid, left(f.geoid,5) as county_geoid, f.%food% as data_value, t.geom --poverty_rate
+FROM tract_2010_carto t
+INNER JOIN food_access f ON t.geoid = f.geoid
+
+
