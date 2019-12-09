@@ -28,6 +28,7 @@ const renderFieldBasedOnType = (field, value, onChange) => {
           marks={field.marks}
           min={field.min}
           max={field.max}
+          step={null}
           defaultValue={field.defaultValue}
           onChange={(e, newValue) => {
             const { ["fieldOptions"]: removedKey, ...groupOptions } = field;
@@ -160,11 +161,12 @@ const YearFilter = ({ field, value, onChange, filterValues }) => {
       }
     });
     yearOptions.forEach(function (item, index) {
-      yearOptionsFormatted.push({ value: item, label: String(item) })
+      yearOptionsFormatted.push({ value: item })
     })
     return yearOptionsFormatted;
 
   };
+
   return (
     <React.Fragment key={field.name}>
       <Text>
@@ -175,11 +177,12 @@ const YearFilter = ({ field, value, onChange, filterValues }) => {
         value={value}
         valueLabelDisplay="auto"
         onChange={(e, newValue) => onChange({ name: field.name, value: newValue })}
-        min={1950}
-        max={2050}
+        min={1999}
+        max={2020}
         defaultValue={2000}
+        marks={buildYearOptions()}
+        step={null}
       />
-
     </React.Fragment>
 
   );
