@@ -8,7 +8,7 @@ Loading the caces downscaled modeled pollutant
 
 
 import pandas, glob, os
-from sqlalchemy import create_engine
+#from sqlalchemy import create_engine
 
 
 
@@ -20,7 +20,10 @@ dataset = glob.glob(os.path.join(dataDirectory,"uwc15728381770719ae671dd7d18d016
 listOfVariables = ['no2', 'o3', 'pm10', 'pm25', 'so2', 'co']
 
 df = pandas.read_csv(dataset[0])
-theData = df.drop(columns=['lat','lon'])
+
+years = list(df.year.unique())
+for y in years:
+    theData = df.loc[df['year'] == y].drop(columns=['lat','lon'])
 #theData.to_sql('caces_{}'.format(v), engine)
-theData.to_csv(os.path.join(outDirectory, "caces_pollutants.csv"))
+    theData.to_csv(os.path.join(outDirectory, "caces_pollutants_{}.csv".format(y)) , index=False )
 
