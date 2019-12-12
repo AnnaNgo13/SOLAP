@@ -49,33 +49,6 @@ class GeoServer(object):
         self.theKey = paramiko.RSAKey.from_private_key_file(userDict["serverPass"]) 
         
         
-        
-#        if base_url == 'geoserver.terrapop.org':
-#            self.dataDirectory = '/web/tomcat6/webapps/geoserver/data/'
-#            self.hostaddress = self.baseUrl
-#            import haynes
-#            self.user, self.pswd = haynes.getaccess()
-#            self.serverPSWD = self.pswd
-#        elif base_url == 'geoserver3.pop.umn.edu:8080':
-#            self.hostaddress = self.baseUrl.split(':')[0]
-#            self.dataDirectory = '/web/webapps/geoserver/data/data'
-#            self.user = 'dahaynes'
-#            self.pswd = 'xSQAb.ksU'
-#            #geoserver doesn't support LDAP until geoserver 2.10            
-#            import haynes
-#            self.user, newPSWD = haynes.getaccess()
-#            self.serverPSWD = newPSWD
-#        elif base_url == 'localhost:8080':
-#            self.hostaddress = self.baseUrl.split(':')[0]
-#            self.dataDirectory = '/web/webapps/geoserver/data/data'
-#            self.user = "admin"
-#            self.pswd = "geoserver"
-#            import haynes
-#            self.user, newPSWD = haynes.getAccess()
-#            self.serverPSWD = newPSWD
-#        else:
-#            self.dataDirectory = ''
-#            print('No Data Directory found')
 
     def CreateTerraScopeWorkSpace(self, workspace_name):
         """ Creates a new Workspace on Geoserver.
@@ -280,7 +253,7 @@ class GeoServer(object):
         ssh.connect(self.hostaddress, username=self.serverUser, pkey=self.theKey)
         sftp = ssh.open_sftp() 
         #sftp = paramiko.SFTPClient.from_transport
-        print(self.hostaddress, self.serverUser)
+        print(self.hostaddress, self.serverUser, self.dataDirectory)
         #transport = paramiko.Transport((self.hostaddress, 22)) 
         #ssh.connect("129.114.104.42", username="dhaynes", pkey=theKey)
         

@@ -28,3 +28,6 @@ nhgis0034_ts_geog2010_data2000_tract.csv
 datasets/caces_pollutants.csv
 datasets/caces_pollutants.csv
 datasets/caces_pollutants.csv
+datasets/caces_pollutants.csv
+*.pyc
+pythonTools/pythonLoadingScripts/__pycache__/GeoServer.cpython-35.pyc

@@ -38,6 +38,7 @@ class Clip(object):
         self.shapePath = shapefilePath
         self.rasterBand = rasterBand
         self.rasterType = rasterType
+        self.clip_raster()
         
 
     def clip_raster(self):
@@ -150,9 +151,10 @@ class Clip(object):
             #print "Source Raster", srcArray        
             maskArray = polyband.ReadAsArray(0,row,self.pxWidth,1)    
             #print "Raserized Polygon", maskArray            
-            maskRast = self.np.ma.masked_where(maskArray==1, srcArray)
+            maskRast = self.np.ma.masked_where(maskArray!=1, srcArray)
+            #maskRast = self.np.ma.masked_where(maskArray==1, srcArray)
             #print "Clipped Raster", self.np.ma.filled(maskRast,)        
-            band.WriteArray(srcArray,yoff=row)
+            band.WriteArray(self.np.ma.filled(maskRast,-99),yoff=row)
             #This replaces srcArray if you want to have the maskRast values
             #self.np.ma.filled(maskRast,-99)
             #print row

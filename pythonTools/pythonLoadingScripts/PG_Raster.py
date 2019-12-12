@@ -23,7 +23,10 @@ class PG_Raster():
             self.port = theEnvironment["port"]
             self.user = theEnvironment["user"]        
             self.password = theEnvironment["password"]
+            #Geoserver base address http://149.165.157.200:8080/
             self.geoserverHost = theEnvironment["geoserver"]
+            #Rasterpgsql command with some special tags
+            #"raster2pgsql -C -x -I -Y -F -t 250x250 -s 4326 -l 2,4,8,16,32 -vrt geotiff.tif -table landcover.mn_2000"
             self.CommandParser(theEnvironment["rsql"])
             
 #            self.raster_table = theEnvironment["raster"]
@@ -152,6 +155,7 @@ class PG_Raster():
             self.geoserver_url = geoserver_url
             self.tpg = GeoServer(self.geoserver_url, geoserver_dict)
             self.geoserver_workspace = geoserver_workspace
+            #print(self.geoserver_workspace)
     
             if len(mnemonics_csv) == 1:
                 #  This only applies to single band rasters, exist at 1 time point
@@ -171,6 +175,7 @@ class PG_Raster():
     
                 #  Determine if a Geoserver workspace exists
                 workspace_url = r'http://%s/geoserver/rest/workspaces/%s' % (self.geoserver_url, self.geoserver_workspace)
+                print(workspace_url)
                 self.workspace_exists = self.tpg.DoesUrlExist(workspace_url)
     
                 if self.workspace_exists == 404 or self.workspace_exists == 401:
@@ -319,7 +324,8 @@ class PG_Raster():
         coveragestore_url = r'http://%s/geoserver/rest/workspaces/%s/coveragestores' % (self.geoserver_url, self.geoserver_workspace)
 
         self.coveragestore_name = tablename.split('.')[-1].upper()
-        coveragestore_path =  'file:%s/%s.xml' % (self.schema, tablename)
+        coveragestore_path =  'file:/coverages/%s/%s.xml' % (self.schema, tablename)
+        print("Coverage Store Path: {}".format(coveragestore_path))
 
         #modified coveragestore_path (file:gli/gli.fruit_har.xml)
         self.coveragestore_XML = self.tpg.CreateStoreXML(self.coveragestore_name, "Something goes here", self.geoserver_workspace,coveragestore_path)
@@ -354,8 +360,8 @@ class PG_Raster():
         self.rasterFlags = {'tilesize': {'flag': '-t', 'pattern': '-t [0-9]*x[0-9]*' ,'value': None },
                             'epsg': {'flag': '-s', 'pattern': '-s [0-9]*' ,'value': None},
                             'overviews': {'flag':'-l', 'pattern': '-l ([0-9]*,)*[0-9]*', 'value': None},
-                            'vrtfile' : {'flag' : '-vrt', 'pattern' : '-vrt (\S)*', 'value': None  },
-                            'postgistable' : {'flag' : '-table', 'pattern': '-table ([a-z]*.[\S]*)', 'value': None} }
+                            'vrtfile' : {'flag' : '-vrt', 'pattern' : r'-vrt (\S)*', 'value': None  },
+                            'postgistable' : {'flag' : '-table', 'pattern': r'-table ([a-z]*.[\S]*)', 'value': None} }
         verified = 0
 
         for f in self.rasterFlags:
@@ -394,7 +400,9 @@ class PG_Raster():
             return 0
 
     def UploadRaster(self,pg_host, pg_database, pg_port, pg_user):
-        """ This function uploades the raster using subprocess module.
+        """ 
+        --- Would like to update this to support the self.host properties
+        This function uploades the raster using subprocess module.
 
         :param pg_host:
         :param pg_database:
@@ -416,7 +424,7 @@ class PG_Raster():
         print(self.host, self.db, self.port, self.user)
         self.CreatePostgreSQLConnection()
         #self.DoesRasterSchemaExist(self.schema)
-        #self.DoesRasterTableExist(self.schema, table)
+        self.DoesRasterTableExist(self.schema, table)
 
         if type(self.overviews) == list:
             for view in self.overviews:
