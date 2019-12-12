@@ -25,6 +25,4 @@ for i in tiffFiles:
     r = Clip(i, shpPath, outTiff, 1, "GTiff")
     r.clip_raster()
     year += 5
-    break
-
-del r
+    del r
