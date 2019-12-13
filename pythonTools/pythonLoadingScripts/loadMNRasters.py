@@ -7,22 +7,27 @@ Script for Clipping MN Raster data
 """
 
 from clip import Clip
-import glob, os
+import glob, os, re
 
 
 
-tiffFilePath = r"E:\imagery_datasets\meris_test"
+tiffFilePath = r"E:\imagery_datasets\meris_annual"
 shpPath = r"E:\git\SOLAP\datasets\shapefiles\mn_boundary_wgs84.shp"
 
 
 
 tiffFiles = glob.glob(os.path.join(tiffFilePath, "*.tif"))
 
-year = 2000
+
 for i in tiffFiles:
-    outTiff = r"E:\git\SOLAP\datasets\rasters\mn_meris_{}.tif".format(year)
-    print(i, outTiff)
-    r = Clip(i, shpPath, outTiff, 1, "GTiff")
-    r.clip_raster()
-    year += 5
-    del r
+    print(i)
+    imageYear = r"[0-9][0-9][0-9][0-9]"
+    result = re.search(imageYear, i)
+    if result.group():
+        year = result.group()
+        outTiff = r"E:\git\SOLAP\datasets\rasters\mn_meris_annual_{}.tif".format(year)
+        print(i, outTiff)
+        r = Clip(i, shpPath, outTiff, 1, "GTiff")
+        r.clip_raster()
+        #year += 5
+        del r
